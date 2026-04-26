@@ -1,0 +1,31 @@
+# General
+README.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Log files
+*.log
+/logs/*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### VS Code ###
+.vscode/
+
+### STS / Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
