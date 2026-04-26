@@ -1,0 +1,6 @@
+name,industry,techStack,employeeCount,isHiring
+TechNova,Software,Java React,600,true
+GreenEnergy,Utilities,Python,150,false
+BlueBank,Finance,Java Angular,1200,true
+QuickShop,Retail,PHP,45,true
+CloudScale,Software,Node.js React,300,true
