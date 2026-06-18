@@ -5,30 +5,40 @@ function App() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
-    // Add these new states at the top of your App function
+  // Form states
   const [newName, setNewName] = useState('');
   const [newIndustry, setNewIndustry] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Handle Adding a Lead
   const handleAddLead = (e) => {
     e.preventDefault();
-    const newLead = { name: newName, industry: newIndustry, techStack: "Java", employeeCount: 100, isHiring: true };
+    const newLead = { 
+      name: newName, 
+      industry: newIndustry, 
+      techStack: "Java", // Default for now
+      employeeCount: 100, 
+      isHiring: true 
+    };
     
     axios.post("http://localhost:8080/api/leads", newLead)
       .then(response => {
-        setLeads([...leads, response.data]); // Update the list instantly
+        setLeads([...leads, response.data]); 
         setNewName('');
         setNewIndustry('');
       });
   };
 
+  // Handle Deleting a Lead
   const handleDelete = (id) => {
-  axios.delete(`http://localhost:8080/api/leads/${id}`)
-    .then(() => {
-      setLeads(leads.filter(lead => lead.id !== id)); // Remove from UI
-      });
+    axios.delete(`http://localhost:8080/api/leads/${id}`)
+      .then(() => {
+        setLeads(leads.filter(lead => lead.id !== id)); 
+      })
+      .catch(err => console.error("Could not delete:", err));
   };
+
   useEffect(() => {
-    // 1. Make sure Spring Boot is running in IntelliJ on port 8080!
     axios.get("http://localhost:8080/api/leads")
       .then(response => {
         setLeads(response.data);
@@ -40,7 +50,12 @@ function App() {
       });
   }, []);
 
-return (
+  const filteredLeads = leads.filter(company => 
+    company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    company.industry.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
     <div style={{ 
       padding: '40px', 
       backgroundColor: '#0f172a', 
@@ -51,7 +66,7 @@ return (
       <h1 style={{ color: '#38bdf8', marginBottom: '10px' }}>B2B Lead Intelligence</h1>
       <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Real-time scoring from Spring Boot Backend</p>
       
-      {/* --- ADD NEW LEAD FORM START --- */}
+      {/* --- ADD NEW LEAD FORM --- */}
       <form onSubmit={handleAddLead} style={{ 
         marginBottom: '40px', 
         padding: '20px', 
@@ -71,7 +86,7 @@ return (
           style={{ padding: '10px', borderRadius: '6px', border: '1px solid #334155', backgroundColor: '#0f172a', color: 'white', flex: 1 }}
           value={newIndustry} 
           onChange={e => setNewIndustry(e.target.value)} 
-          placeholder="Industry (e.g. Tech, Finance)" 
+          placeholder="Industry" 
           required 
         />
         <button type="submit" style={{ 
@@ -86,22 +101,34 @@ return (
           + Add Lead
         </button>
       </form>
-      {/* --- ADD NEW LEAD FORM END --- */}
-      {/* --- Delete LEAD FORM END --- */}
 
-      <button 
-      onClick={() => handleDelete(company.id)}
-      style={{ backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '5px 10px', marginLeft: '10px' }}
-    >
-      Delete
-    </button>
-
-      {loading ? (
-        <p>Loading leads...</p>
-      ) : (
-        <div style={{ display: 'grid', gap: '15px' }}>
-          {leads.map((company, index) => (
-            <div key={index} style={{ 
+      {/* --- SEARCH BAR START --- */}
+      <div style={{ marginBottom: '25px' }}>
+        <input 
+          style={{ 
+            width: '100%', 
+            padding: '12px 20px', 
+            borderRadius: '8px', 
+            border: '1px solid #334155', 
+            backgroundColor: '#1e293b', 
+            color: 'white',
+            fontSize: '1rem',
+            boxSizing: 'border-box'
+          }}
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="🔍 Search leads by company name or industry..."
+        />
+      </div>
+      {/* --- SEARCH BAR END --- */}
+      
+        {loading ? (
+          <p>Loading leads...</p>
+        ) : (
+          <div style={{ display: 'grid', gap: '15px' }}>
+            {/* Use filteredLeads instead of leads */}
+            {filteredLeads.map((company) => ( 
+              <div key={company.id} style={{
               border: '1px solid #1e293b', 
               padding: '20px', 
               borderRadius: '12px', 
@@ -110,16 +137,37 @@ return (
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ margin: '0', fontSize: '1.5rem' }}>{company.name}</h2>
-                <span style={{ 
-                  backgroundColor: company.score > 50 ? '#059669' : '#d97706',
-                  padding: '5px 12px',
-                  borderRadius: '20px',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold'
-                }}>
-                  Score: {company.score}
-                </span>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <span style={{ 
+                    backgroundColor: company.score > 50 ? '#059669' : '#d97706',
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold'
+                  }}>
+                    Score: {company.score}
+                  </span>
+
+                  {/* --- DELETE BUTTON IS NOW PROPERLY INSIDE THE MAP --- */}
+                  <button 
+                    onClick={() => handleDelete(company.id)}
+                    style={{ 
+                      backgroundColor: '#ef4444', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer', 
+                      padding: '8px 12px',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
+              
               <p style={{ margin: '10px 0 0', color: '#94a3b8' }}>
                 <strong>Industry:</strong> {company.industry} | <strong>Tech:</strong> {company.techStack}
               </p>
