@@ -122,57 +122,77 @@ function App() {
       </div>
       {/* --- SEARCH BAR END --- */}
       
-        {loading ? (
-          <p>Loading leads...</p>
-        ) : (
-          <div style={{ display: 'grid', gap: '15px' }}>
-            {/* Use filteredLeads instead of leads */}
-            {filteredLeads.map((company) => ( 
-              <div key={company.id} style={{
-              border: '1px solid #1e293b', 
-              padding: '20px', 
-              borderRadius: '12px', 
-              backgroundColor: '#1e293b',
-              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ margin: '0', fontSize: '1.5rem' }}>{company.name}</h2>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <span style={{ 
-                    backgroundColor: company.score > 50 ? '#059669' : '#d97706',
-                    padding: '5px 12px',
-                    borderRadius: '20px',
-                    fontSize: '0.9rem',
-                    fontWeight: 'bold'
-                  }}>
-                    Score: {company.score}
-                  </span>
+      {loading ? (
+        <p>Loading leads...</p>
+      ) : (
+        <div style={{ display: 'grid', gap: '15px' }}>
+          {filteredLeads.map((company) => {
+            // Dynamic color determination for the status tag
+            let statusColor = '#64748b'; // COLD (Slate gray)
+            if (company.status === 'HOT') statusColor = '#ef4444'; // HOT (Red)
+            if (company.status === 'WARM') statusColor = '#f59e0b'; // WARM (Amber/Yellow)
 
-                  {/* --- DELETE BUTTON IS NOW PROPERLY INSIDE THE MAP --- */}
-                  <button 
-                    onClick={() => handleDelete(company.id)}
-                    style={{ 
-                      backgroundColor: '#ef4444', 
-                      color: 'white', 
-                      border: 'none', 
-                      borderRadius: '6px', 
-                      cursor: 'pointer', 
-                      padding: '8px 12px',
-                      fontSize: '0.8rem',
+            return (
+              <div key={company.id} style={{
+                border: '1px solid #1e293b', 
+                padding: '20px', 
+                borderRadius: '12px', 
+                backgroundColor: '#1e293b',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <h2 style={{ margin: '0', fontSize: '1.5rem' }}>{company.name}</h2>
+                    
+                    {/* --- STATUS SEGMENT BADGE --- */}
+                    <span style={{
+                      backgroundColor: statusColor,
+                      color: '#ffffff',
+                      padding: '3px 10px',
+                      borderRadius: '20px',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                      textTransform: 'uppercase'
+                    }}>
+                      {company.status || 'COLD'}
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <span style={{ 
+                      backgroundColor: company.score > 50 ? '#059669' : '#d97706',
+                      padding: '5px 12px',
+                      borderRadius: '20px',
+                      fontSize: '0.9rem',
                       fontWeight: 'bold'
-                    }}
-                  >
-                    Delete
-                  </button>
+                    }}>
+                      Score: {company.score}
+                    </span>
+
+                    <button 
+                      onClick={() => handleDelete(company.id)}
+                      style={{ 
+                        backgroundColor: '#ef4444', 
+                        color: 'white', 
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer', 
+                        padding: '8px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
+                
+                <p style={{ margin: '10px 0 0', color: '#94a3b8' }}>
+                  <strong>Industry:</strong> {company.industry} | <strong>Tech:</strong> {company.techStack}
+                </p>
               </div>
-              
-              <p style={{ margin: '10px 0 0', color: '#94a3b8' }}>
-                <strong>Industry:</strong> {company.industry} | <strong>Tech:</strong> {company.techStack}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
