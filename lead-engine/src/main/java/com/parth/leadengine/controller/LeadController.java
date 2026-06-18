@@ -27,6 +27,7 @@ public class LeadController {
     public Company addLead(@RequestBody Company company) {
         // Calculate score before saving
         company.setScore(scoringService.calculateScore(company));
+        company.setStatus(scoringService.determineStatus(company.getScore())); // set score label like hot cool
         // Save to PostgreSQL
         return companyRepository.save(company);
     }
@@ -42,12 +43,13 @@ public class LeadController {
         if (companyRepository.count() == 0) {
             System.out.println("Database is empty. Importing from CSV...");
 
-            String path = "C:/Users/PARTH/Documents/companies.csv"; // Ensure this path is correct
+            String path = "C:/Users/PARTH/Documents/companies.csv";
             List<Company> csvLeads = csvService.readCompaniesFromCsv(path);
 
             // 2. Score them and Save to Database
             for (Company c : csvLeads) {
                 c.setScore(scoringService.calculateScore(c));
+                c.setStatus(scoringService.determineStatus(c.getScore()));
                 companyRepository.save(c); // This saves the row to Postgres!
             }
         }

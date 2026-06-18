@@ -18,4 +18,5 @@ public class Company {
     private int employeeCount;
     private boolean isHiring;
     private int score;
+    private String status; // HOT, WARM, COLD
 }

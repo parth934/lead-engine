@@ -20,4 +20,11 @@ public class ScoringService {
         }
         return points;
     }
+
+    // New helper method to determine tier segment
+    public String determineStatus(int score) {
+        if (score >= 80) return "HOT";
+        if (score >= 50) return "WARM";
+        return "COLD";
+    }
 }
