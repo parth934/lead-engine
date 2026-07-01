@@ -1,17 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-// Live production backend URL on Render
 const API_BASE_URL = "https://lead-engine-backend-il3y.onrender.com/api/leads";
 
 function App() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Search and Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTechFilter, setActiveTechFilter] = useState('ALL'); // NEW: Track active tech category
+
   // Form states
   const [newName, setNewName] = useState('');
   const [newIndustry, setNewIndustry] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+
+  // Technology Categories for Filter Buttons
+  const categories = [
+    { label: '🌐 All Tech', value: 'ALL' },
+    { label: '☕ Java / Spring', value: 'java' },
+    { label: '🤖 AI / ML', value: 'python' },
+    { label: '☁️ Cloud / DevOps', value: 'aws' },
+    { label: '🛢️ Database', value: 'sql' },
+    { label: '🧪 Testing / QA', value: 'testing' }
+  ];
 
   // Handle Adding a Lead
   const handleAddLead = (e) => {
@@ -19,7 +31,7 @@ function App() {
     const newLead = { 
       name: newName, 
       industry: newIndustry, 
-      techStack: "Java", // Default for now
+      techStack: "Java", 
       employeeCount: 100, 
       isHiring: true 
     };
@@ -54,10 +66,18 @@ function App() {
       });
   }, []);
 
-  const filteredLeads = leads.filter(company => 
-    company.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    company.industry?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Advanced Filtering Pipeline: Combines Search Query + Active Category Button
+  const filteredLeads = leads.filter(company => {
+    const matchesSearch = 
+      company.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      company.industry?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory = 
+      activeTechFilter === 'ALL' || 
+      company.techStack?.toLowerCase().includes(activeTechFilter.toLowerCase());
+
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div style={{ 
@@ -68,11 +88,11 @@ function App() {
       fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
     }}>
       <h1 style={{ color: '#38bdf8', marginBottom: '10px' }}>B2B Lead Intelligence</h1>
-      <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Real-time scoring from Live Spring Boot Backend</p>
+      <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Real-time domain filtering from Live Spring Boot Backend</p>
       
       {/* --- ADD NEW LEAD FORM --- */}
       <form onSubmit={handleAddLead} style={{ 
-        marginBottom: '40px', 
+        marginBottom: '30px', 
         padding: '20px', 
         backgroundColor: '#1e293b', 
         borderRadius: '12px',
@@ -106,7 +126,29 @@ function App() {
         </button>
       </form>
 
-      {/* --- SEARCH BAR START --- */}
+      {/* --- MULTI-CATEGORY FILTER BAR --- */}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '25px' }}>
+        {categories.map((cat) => (
+          <button
+            key={cat.value}
+            onClick={() => setActiveTechFilter(cat.value)}
+            style={{
+              padding: '10px 18px',
+              borderRadius: '20px',
+              border: activeTechFilter === cat.value ? '2px solid #38bdf8' : '1px solid #334155',
+              backgroundColor: activeTechFilter === cat.value ? '#38bdf8' : '#1e293b',
+              color: activeTechFilter === cat.value ? '#0f172a' : '#f8fafc',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* --- SEARCH BAR --- */}
       <div style={{ marginBottom: '25px' }}>
         <input 
           style={{ 
@@ -121,20 +163,18 @@ function App() {
           }}
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          placeholder="🔍 Search leads by company name or industry..."
+          placeholder="🔍 Refine current filter by company name or industry..."
         />
       </div>
-      {/* --- SEARCH BAR END --- */}
       
       {loading ? (
         <p>Loading leads from cloud network...</p>
       ) : (
         <div style={{ display: 'grid', gap: '15px' }}>
           {filteredLeads.map((company) => {
-            // Dynamic color determination for the status tag
-            let statusColor = '#64748b'; // COLD (Slate gray)
-            if (company.status === 'HOT') statusColor = '#ef4444'; // HOT (Red)
-            if (company.status === 'WARM') statusColor = '#f59e0b'; // WARM (Amber/Yellow)
+            let statusColor = '#64748b'; 
+            if (company.status === 'HOT') statusColor = '#ef4444'; 
+            if (company.status === 'WARM') statusColor = '#f59e0b'; 
 
             return (
               <div key={company.id} style={{
@@ -147,8 +187,6 @@ function App() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <h2 style={{ margin: '0', fontSize: '1.5rem' }}>{company.name}</h2>
-                    
-                    {/* --- STATUS SEGMENT BADGE --- */}
                     <span style={{
                       backgroundColor: statusColor,
                       color: '#ffffff',
@@ -197,6 +235,9 @@ function App() {
               </div>
             );
           })}
+          {filteredLeads.length === 0 && (
+            <p style={{ color: '#94a3b8', textAlign: 'center', marginTop: '20px' }}>No records found matching this technology segment.</p>
+          )}
         </div>
       )}
     </div>
